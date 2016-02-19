@@ -21,6 +21,22 @@
     fill: white;
     text-anchor: middle;
 }
+
+.node circle {
+    fill: #fff;
+    stroke: steelblue;
+    stroke-width: 1.5px;
+}
+
+.node {
+    font: 12px sans-serif;
+}
+
+.link {
+    fill: none;
+    stroke: #ccc;
+    stroke-width: 1.5px;
+}
 </style>
 
 <body>
@@ -563,5 +579,352 @@
                 .duration(1000)
                 .style("fill", color20(d.source.index));
         });
+
+    // 集群图的制作
+    var svg7 = d3.select("body")
+        .append("svg")
+        .attr("width", width)
+        .attr("height", height).append("g")
+        .attr("transform", "translate(40,0)");;
+    var cluster = d3.layout.cluster()
+        .size([width, height - 200]);
+    var diagonal = d3.svg.diagonal()
+        .projection(function(d) {
+            return [d.y, d.x];
+        });
+    d3.json("city.json", function(error, root) {
+        var nodes = cluster.nodes(root);
+        var links = cluster.links(nodes);
+        console.log(nodes);
+        console.log(links);
+
+        var link = svg7.selectAll(".link")
+            .data(links)
+            .enter()
+            .append("path")
+            .attr("class", "link")
+            .attr("d", diagonal); //使用对角线生成器
+        var node = svg7.selectAll(".node")
+            .data(nodes)
+            .enter()
+            .append("g")
+            .attr("class", "node")
+            .attr("transform", function(d) {
+                return "translate(" + d.y + "," + d.x + ")";
+            });
+        node.append("circle")
+            .attr("r", 4.5);
+        node.append("text")
+            .attr("dx", function(d) {
+                return d.children ? -8 : 8;
+            })
+            .attr("dy", 3)
+            .style("text-anchor", function(d) {
+                return d.children ? "end" : "start";
+            })
+            .text(function(d) {
+                return d.name;
+            });
+    });
+
+    //树状图
+    var tree = d3.layout.tree()
+        .size([width, height - 200])
+        .separation(function(a, b) {
+            return (a.parent == b.parent ? 1 : 2);
+        });
+
+    var diagonal = d3.svg.diagonal()
+        .projection(function(d) {
+            return [d.y, d.x];
+        });
+
+    var svg8 = d3.select("body").append("svg")
+        .attr("width", width)
+        .attr("height", height)
+        .append("g")
+        .attr("transform", "translate(40,0)");
+
+
+
+    d3.json("city_tree.json", function(error, root) {
+
+        var nodes = tree.nodes(root);
+        var links = tree.links(nodes);
+
+        console.log(nodes);
+        console.log(links);
+
+        var link = svg8.selectAll(".link")
+            .data(links)
+            .enter()
+            .append("path")
+            .attr("class", "link")
+            .attr("d", diagonal);
+
+        var node = svg8.selectAll(".node")
+            .data(nodes)
+            .enter()
+            .append("g")
+            .attr("class", "node")
+            .attr("transform", function(d) {
+                return "translate(" + d.y + "," + d.x + ")";
+            })
+
+        node.append("circle")
+            .attr("r", 4.5);
+
+        node.append("text")
+            .attr("dx", function(d) {
+                return d.children ? -8 : 8;
+            })
+            .attr("dy", 3)
+            .style("text-anchor", function(d) {
+                return d.children ? "end" : "start";
+            })
+            .text(function(d) {
+                return d.name;
+            });
+    });
+    //打包图
+    var svg9 = d3.select("body").append("svg")
+        .attr("width", width)
+        .attr("height", height)
+        .append("g")
+        .attr("transform", "translate(0,0)");
+    var pack = d3.layout.pack()
+        .size([width, height])
+        .radius(20);
+    d3.json("city2.json", function(error, root) {
+        var nodes = pack.nodes(root);
+        var links = pack.links(nodes);
+
+        console.log(nodes);
+        console.log(links);
+        svg9.selectAll("circle")
+            .data(nodes)
+            .enter()
+            .append("circle")
+            .attr("fill", "rgb(31, 119, 180)")
+            .attr("fill-opacity", "0.4")
+            .attr("cx", function(d) {
+                return d.x;
+            })
+            .attr("cy", function(d) {
+                return d.y;
+            })
+            .attr("r", function(d) {
+                return d.r;
+            })
+            .on("mouseover", function(d, i) {
+                d3.select(this)
+                    .attr("fill", "yellow");
+            })
+            .on("mouseout", function(d, i) {
+                d3.select(this)
+                    .attr("fill", "rgb(31, 119, 180)");
+            });
+        svg9.selectAll("text")
+            .data(nodes)
+            .enter()
+            .append("text")
+            .attr("font-size", "10px")
+            .attr("fill", "white")
+            .attr("fill-opacity", function(d) {
+                if (d.depth == 2)
+                    return "0.9";
+                else
+                    return "0";
+            })
+            .attr("x", function(d) {
+                return d.x;
+            })
+            .attr("y", function(d) {
+                return d.y;
+            })
+            .attr("dx", -12)
+            .attr("dy", 1)
+            .text(function(d) {
+                return d.name;
+            });
+    });
+
+    //地图的制作
+    var width = 1000;
+    var height = 1000;
+
+    var svg10 = d3.select("body").append("svg")
+        .attr("width", width)
+        .attr("height", height)
+        .append("g")
+        .attr("transform", "translate(0,0)");
+
+    var projection = d3.geo.mercator()
+        .center([107, 31])
+        .scale(850)
+        .translate([width / 2, height / 2]);
+
+    var path = d3.geo.path()
+        .projection(projection);
+
+
+    var color = d3.scale.category20();
+
+
+    d3.json("china_s.geojson", function(error, root) {
+
+        if (error)
+            return console.error(error);
+        console.log(root.features);
+
+        svg10.selectAll("path")
+            .data(root.features)
+            .enter()
+            .append("path")
+            .attr("stroke", "#000")
+            .attr("stroke-width", 1)
+            .attr("fill", function(d, i) {
+                return color(i);
+            })
+            .attr("d", path)
+            .on("mouseover", function(d, i) {
+                d3.select(this)
+                    .attr("fill", "yellow");
+            })
+            .on("mouseout", function(d, i) {
+                d3.select(this)
+                    .attr("fill", color(i));
+            });
+
+    });
+
+    //可拖动的地图
+    var width = 1000;
+    var height = 1000;
+
+    var svg11 = d3.select("body").append("svg")
+        .attr("width", width)
+        .attr("height", height)
+        .append("g")
+        .attr("transform", "translate(0,0)");
+
+    var projection = d3.geo.mercator()
+        .center([107, 31])
+        .scale(850)
+        .translate([width / 2, height / 2]);
+
+    var path = d3.geo.path()
+        .projection(projection);
+
+    var force = d3.layout.force().size([width, height]);
+
+    var color = d3.scale.category20();
+
+    d3.json("china_simplify.json", function(error, root) {
+
+        if (error)
+            return console.error(error);
+        console.log(root.features);
+
+        var nodes = [];
+        var links = [];
+
+        root.features.forEach(function(d, i) {
+            var centroid = path.centroid(d);
+            centroid.x = centroid[0];
+            centroid.y = centroid[1];
+            centroid.feature = d;
+            nodes.push(centroid);
+        });
+
+        var triangles = d3.geom.voronoi().triangles(nodes);
+
+        triangles.forEach(function(d, i) {
+            links.push(edge(d[0], d[1]));
+            links.push(edge(d[1], d[2]));
+            links.push(edge(d[2], d[0]));
+        });
+
+        console.log(nodes);
+        console.log(links);
+
+        force.gravity(0)
+            .charge(0)
+            .nodes(nodes)
+            .links(links)
+            .linkDistance(function(d) {
+                return d.distance;
+            })
+            .start();
+
+        var node = svg11.selectAll("g")
+            .data(nodes)
+            .enter().append("g")
+            .attr("transform", function(d) {
+                return "translate(" + -d.x + "," + -d.y + ")";
+            })
+            .call(force.drag)
+            .append("path")
+            .attr("transform", function(d) {
+                return "translate(" + d.x + "," + d.y + ")";
+            })
+            .attr("stroke", "#000")
+            .attr("stroke-width", 1)
+            .attr("fill", function(d, i) {
+                return color(i);
+            })
+            .attr("d", function(d) {
+                return path(d.feature);
+            });
+
+        var link = svg11.selectAll("line")
+            .data(links)
+            .enter()
+            .append("line")
+            .attr("class", "link")
+            .attr("x1", function(d) {
+                return d.source.x;
+            })
+            .attr("y1", function(d) {
+                return d.source.y;
+            })
+            .attr("x2", function(d) {
+                return d.target.x;
+            })
+            .attr("y2", function(d) {
+                return d.target.y;
+            });
+
+        force.on("tick", function() {
+            link.attr("x1", function(d) {
+                    return d.source.x;
+                })
+                .attr("y1", function(d) {
+                    return d.source.y;
+                })
+                .attr("x2", function(d) {
+                    return d.target.x;
+                })
+                .attr("y2", function(d) {
+                    return d.target.y;
+                });
+
+            node.attr("transform", function(d) {
+                return "translate(" + d.x + "," + d.y + ")";
+            });
+        });
+
+
+    });
+
+    function edge(a, b) {
+        var dx = a[0] - b[0],
+            dy = a[1] - b[1];
+        return {
+            source: a,
+            target: b,
+            distance: Math.sqrt(dx * dx + dy * dy)
+        };
+    }
     </script>
 </body>
