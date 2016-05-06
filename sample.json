@@ -17,7 +17,25 @@
     "children": [
         {
             "name": "Airline_alliances",
-            "isparent": false
+            "isparent": false,
+			"children": [
+				{
+					"name": "Airline_alliances",
+					"isparent": false
+				},
+				{
+					"name": "Airlines_by_continent",
+					"isparent": false
+				},
+				{
+					"name": "Airlines_by_type",
+					"isparent": false
+				},
+				{
+					"name": "Defunct_airlines",
+					"isparent": false
+				}
+			]
         },
         {
             "name": "Airlines_by_continent",
@@ -29,7 +47,25 @@
         },
         {
             "name": "Defunct_airlines",
-            "isparent": false
+            "isparent": false,
+			"children": [
+				{
+					"name": "Airline_alliances",
+					"isparent": false
+				},
+				{
+					"name": "Airlines_by_continent",
+					"isparent": false
+				},
+				{
+					"name": "Airlines_by_type",
+					"isparent": false
+				},
+				{
+					"name": "Defunct_airlines",
+					"isparent": false
+				}
+			]
         }
     ]
 }
